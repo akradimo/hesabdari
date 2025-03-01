@@ -1,0 +1,904 @@
+ادامه از چت قبلی :
+من تمام چت قبلی رو تو فایل گذاشتم همه رو بخون و تفکر کن و ادامه بده
+Length limit reached. DeepSeek can only read the first 87%.
+متوجه شدم! مشکل اینه که صفحه‌های مدیریت محصولات، مشتریان، فروش و گزارش‌گیری به درستی به منوی پلاگین اضافه نشدن. برای رفع این مشکل، باید فایل class-settings.php رو به‌روزرسانی کنیم تا این صفحه‌ها رو به منوی پلاگین اضافه کنه. بیا مرحله به مرحله پیش بریم و این مشکل رو حل کنیم.
+
+مرحله ۱: به‌روزرسانی فایل class-settings.php
+فایل includes/class-settings.php رو به این شکل آپدیت می‌کنیم تا همه بخش‌ها (مدیریت محصولات، مشتریان، فروش و گزارش‌گیری) به منوی پلاگین اضافه بشن:
+
+php
+Copy
+<?php
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
+class AA_Settings {
+    public function __construct() {
+        add_action('admin_menu', array($this, 'add_menu_pages'));
+    }
+
+    public function add_menu_pages() {
+        // Main menu item
+        add_menu_page(
+            'Advanced Accounting', // Page title
+            'AA Settings',         // Menu title
+            'manage_options',      // Capability
+            'aa-settings',         // Menu slug
+            array($this, 'render_dashboard_page'), // Callback function
+            'dashicons-cart',      // Icon
+            6                      // Position
+        );
+
+        // Submenu items
+        add_submenu_page(
+            'aa-settings',          // Parent slug
+            'Dashboard',             // Page title
+            'Dashboard',             // Menu title
+            'manage_options',        // Capability
+            'aa-settings',           // Menu slug
+            array($this, 'render_dashboard_page') // Callback function
+        );
+
+        add_submenu_page(
+            'aa-settings',          // Parent slug
+            'مدیریت محصولات',       // Page title
+            'مدیریت محصولات',       // Menu title
+            'manage_options',        // Capability
+            'aa-inventory',          // Menu slug
+            array($this, 'render_inventory_page') // Callback function
+        );
+
+        add_submenu_page(
+            'aa-settings',          // Parent slug
+            'مدیریت مشتریان',       // Page title
+            'مدیریت مشتریان',       // Menu title
+            'manage_options',        // Capability
+            'aa-customers',          // Menu slug
+            array($this, 'render_customers_page') // Callback function
+        );
+
+        add_submenu_page(
+            'aa-settings',          // Parent slug
+            'مدیریت فروش',          // Page title
+            'مدیریت فروش',          // Menu title
+            'manage_options',        // Capability
+            'aa-sales',              // Menu slug
+            array($this, 'render_sales_page') // Callback function
+        );
+
+        add_submenu_page(
+            'aa-settings',          // Parent slug
+            'گزارش‌گیری',           // Page title
+            'گزارش‌گیری',           // Menu title
+            'manage_options',        // Capability
+            'aa-reports',            // Menu slug
+            array($this, 'render_reports_page') // Callback function
+        );
+    }
+
+    public function render_dashboard_page() {
+        include plugin_dir_path(__FILE__) . '../templates/dashboard-template.php';
+    }
+
+    public function render_inventory_page() {
+        include plugin_dir_path(__FILE__) . '../templates/inventory-template.php';
+    }
+
+    public function render_customers_page() {
+        include plugin_dir_path(__FILE__) . '../templates/customers-template.php';
+    }
+
+    public function render_sales_page() {
+        include plugin_dir_path(__FILE__) . '../templates/sales-template.php';
+    }
+
+    public function render_reports_page() {
+        include plugin_dir_path(__FILE__) . '../templates/reports-template.php';
+    }
+}
+مرحله ۲: بررسی ساختار پوشه‌ها
+مطمئن شو که فایل‌های قالب (templates) در مسیر درست قرار دارن. ساختار پوشه‌ها باید به این شکل باشه:
+
+Copy
+wp-content/plugins/advanced-accounting/
+│
+├── includes/
+│   └── class-settings.php
+│
+├── templates/
+│   ├── dashboard-template.php
+│   ├── inventory-template.php
+│   ├── customers-template.php
+│   ├── sales-template.php
+│   └── reports-template.php
+│
+└── advanced-accounting.php
+مرحله ۳: بررسی نهایی
+حالا که فایل class-settings.php رو آپدیت کردیم، مراحل زیر رو انجام می‌دیم:
+
+بررسی منوی پلاگین: به پیشخوان وردپرس برو و مطمئن شو که منوی "AA Settings" و زیرمنوهای اون (Dashboard, مدیریت محصولات, مدیریت مشتریان, مدیریت فروش, گزارش‌گیری) به درستی نمایش داده می‌شن.
+
+بررسی صفحات: هر کدوم از زیرمنوها رو باز کن و مطمئن شو که صفحه‌های مربوطه به درستی بارگذاری می‌شن.
+
+بررسی خطاها: اگر خطایی وجود داره، از طریق debug.log بررسی کن.
+
+مرحله ۴: اضافه کردن لینک‌ها به صفحه اصلی
+اگر می‌خوای لینک‌هایی به صفحه اصلی اضافه کنی تا کاربران بتونن به راحتی به بخش‌های دیگه برن، می‌تونی فایل templates/dashboard-template.php رو به این شکل آپدیت کنی:
+
+php
+Copy
+<div class="aa-dashboard p-6 bg-gray-100">
+    <h2 class="text-2xl font-bold mb-6">داشبورد</h2>
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <a href="<?php echo admin_url('admin.php?page=aa-inventory'); ?>" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <h3 class="text-lg font-semibold text-gray-700">مدیریت محصولات</h3>
+        </a>
+        <a href="<?php echo admin_url('admin.php?page=aa-customers'); ?>" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <h3 class="text-lg font-semibold text-gray-700">مدیریت مشتریان</h3>
+        </a>
+        <a href="<?php echo admin_url('admin.php?page=aa-sales'); ?>" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <h3 class="text-lg font-semibold text-gray-700">مدیریت فروش</h3>
+        </a>
+        <a href="<?php echo admin_url('admin.php?page=aa-reports'); ?>" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <h3 class="text-lg font-semibold text-gray-700">گزارش‌گیری</h3>
+        </a>
+    </div>
+
+    <!-- بقیه کدهای داشبورد -->
+</div>
+مرحله ۵: بررسی نهایی
+حالا که همه چیز رو آپدیت کردیم، مراحل زیر رو انجام می‌دیم:
+
+بررسی منو: مطمئن شو که همه بخش‌ها به منوی پلاگین اضافه شدن.
+
+بررسی صفحات: هر کدوم از بخش‌ها رو باز کن و مطمئن شو که به درستی کار می‌کنن.
+
+بررسی خطاها: اگر خطایی وجود داره، از طریق debug.log بررسی کن.
+
+اگر هنوز مشکلی وجود داره یا نیاز به تغییرات بیشتری داری، بهم بگو تا بیشتر بررسی کنیم! 😊
+
+لطفا فایلها رو خودت بروزرسانی کن و بده الان فقفط فایل templates/dashboard-template.php نتونستم درستش کنم. از این به بعد تکه کد نده فقط کل کد بروزرسانی شده رو بده
+متوجه شدم! فایل templates/dashboard-template.php رو به‌طور کامل بروزرسانی می‌کنم و کل کد رو بهت می‌دم. این فایل شامل تمام بخش‌های داشبورد، لینک‌های سریع به بخش‌های دیگه و نمایش اطلاعات اصلی هست.
+
+فایل templates/dashboard-template.php بروزرسانی شده:
+php
+Copy
+<?php
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
+global $wpdb;
+
+// Get total sales
+$total_sales = $wpdb->get_var("SELECT SUM(total_amount) FROM {$wpdb->prefix}aa_sales");
+
+// Get total inventory value
+$total_inventory_value = $wpdb->get_var("SELECT SUM(quantity * price) FROM {$wpdb->prefix}aa_inventory");
+
+// Get total customers
+$total_customers = $wpdb->get_var("SELECT COUNT(id) FROM {$wpdb->prefix}aa_customers");
+
+// Get recent sales
+$recent_sales = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}aa_sales ORDER BY date DESC LIMIT 5");
+
+// Get low stock products
+$low_stock_products = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}aa_inventory WHERE quantity < 10");
+
+// Get monthly sales data
+$current_month = date('Y-m');
+$monthly_sales = $wpdb->get_results("SELECT DATE(date) as sale_date, SUM(total_amount) as total FROM {$wpdb->prefix}aa_sales WHERE DATE_FORMAT(date, '%Y-%m') = '$current_month' GROUP BY DATE(date)");
+
+// Get new customers this month
+$new_customers = $wpdb->get_var("SELECT COUNT(id) FROM {$wpdb->prefix}aa_customers WHERE DATE_FORMAT(date, '%Y-%m') = '$current_month'");
+?>
+<div class="aa-dashboard p-6 bg-gray-100">
+    <h2 class="text-2xl font-bold mb-6">داشبورد</h2>
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <a href="<?php echo admin_url('admin.php?page=aa-inventory'); ?>" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <h3 class="text-lg font-semibold text-gray-700">مدیریت محصولات</h3>
+        </a>
+        <a href="<?php echo admin_url('admin.php?page=aa-customers'); ?>" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <h3 class="text-lg font-semibold text-gray-700">مدیریت مشتریان</h3>
+        </a>
+        <a href="<?php echo admin_url('admin.php?page=aa-sales'); ?>" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <h3 class="text-lg font-semibold text-gray-700">مدیریت فروش</h3>
+        </a>
+        <a href="<?php echo admin_url('admin.php?page=aa-reports'); ?>" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <h3 class="text-lg font-semibold text-gray-700">گزارش‌گیری</h3>
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <!-- Total Sales -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-700">فروش کل</h3>
+            <p class="text-2xl font-bold text-green-600">
+                <?php echo $total_sales ? number_format($total_sales) . ' تومان' : 'داده‌ای وجود ندارد'; ?>
+            </p>
+        </div>
+
+        <!-- Total Inventory Value -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-700">ارزش موجودی انبار</h3>
+            <p class="text-2xl font-bold text-blue-600">
+                <?php echo $total_inventory_value ? number_format($total_inventory_value) . ' تومان' : 'داده‌ای وجود ندارد'; ?>
+            </p>
+        </div>
+
+        <!-- Total Customers -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-700">تعداد مشتریان</h3>
+            <p class="text-2xl font-bold text-purple-600">
+                <?php echo $total_customers ? $total_customers . ' نفر' : 'داده‌ای وجود ندارد'; ?>
+            </p>
+        </div>
+
+        <!-- New Customers This Month -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-700">مشتریان جدید این ماه</h3>
+            <p class="text-2xl font-bold text-pink-600">
+                <?php echo $new_customers ? $new_customers . ' نفر' : 'داده‌ای وجود ندارد'; ?>
+            </p>
+        </div>
+    </div>
+
+    <!-- Monthly Sales Chart -->
+    <h3 class="text-xl font-bold mb-4">فروش ماهانه</h3>
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <canvas id="monthlySalesChart"></canvas>
+    </div>
+
+    <!-- Low Stock Products -->
+    <h3 class="text-xl font-bold mb-4">موجودی کم</h3>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <table class="min-w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">نام محصول</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">تعداد</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">قیمت</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <?php if ($low_stock_products): ?>
+                    <?php foreach ($low_stock_products as $product): ?>
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo $product->product_name; ?></td>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo $product->quantity; ?></td>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo number_format($product->price); ?> تومان</td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 text-sm text-gray-900 text-center">هیچ محصولی با موجودی کم وجود ندارد.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Recent Sales -->
+    <h3 class="text-xl font-bold mb-4">آخرین فروش‌ها</h3>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="min-w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">شماره فاکتور</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">مشتری</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">مبلغ</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">تاریخ</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <?php if ($recent_sales): ?>
+                    <?php foreach ($recent_sales as $sale): ?>
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo $sale->id; ?></td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            <?php echo $wpdb->get_var("SELECT name FROM {$wpdb->prefix}aa_customers WHERE id = {$sale->customer_id}"); ?>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo number_format($sale->total_amount); ?> تومان</td>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo date('Y/m/d', strtotime($sale->date)); ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-sm text-gray-900 text-center">هیچ فروشی ثبت نشده است.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Chart.js for the monthly sales chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('monthlySalesChart').getContext('2d');
+    const monthlySalesData = <?php echo json_encode($monthly_sales); ?>;
+
+    const labels = monthlySalesData.map(sale => sale.sale_date);
+    const data = monthlySalesData.map(sale => sale.total);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'فروش روزانه',
+                data: data,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                fill: true,
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+توضیحات:
+لینک‌های سریع: در بالای صفحه، لینک‌هایی به بخش‌های مدیریت محصولات، مشتریان، فروش و گزارش‌گیری اضافه شده‌اند.
+
+کارت‌های خلاصه: اطلاعات کلی مانند فروش کل، ارزش موجودی انبار، تعداد مشتریان و مشتریان جدید این ماه نمایش داده می‌شوند.
+
+نمودار فروش ماهانه: با استفاده از Chart.js، نموداری از فروش‌های ماهانه نمایش داده می‌شود.
+
+موجودی کم: لیست محصولاتی که موجودی‌شان کم است نمایش داده می‌شود.
+
+آخرین فروش‌ها: لیست آخرین فروش‌ها به همراه جزئیات نمایش داده می‌شود.
+
+مرحله بعدی:
+اگر نیاز به تغییرات بیشتری داری یا مشکلی وجود داره، بهم بگو تا بیشتر بررسی کنیم! 😊
+
+درسته ادامه بده
+عالیه! حالا که فایل dashboard-template.php درست شده، بیا ادامه بدیم و فایل‌های دیگه رو هم بروزرسانی کنیم. در این مرحله، فایل‌های زیر رو بررسی و بروزرسانی می‌کنیم:
+
+فایل templates/inventory-template.php: برای مدیریت محصولات.
+
+فایل templates/customers-template.php: برای مدیریت مشتریان.
+
+فایل templates/sales-template.php: برای مدیریت فروش.
+
+فایل templates/reports-template.php: برای گزارش‌گیری.
+
+بیا هر کدوم رو به‌طور کامل بروزرسانی کنیم.
+
+۱. فایل templates/inventory-template.php (مدیریت محصولات):
+php
+Copy
+<?php
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
+global $wpdb;
+
+// Add product
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_product'])) {
+    $product_name = sanitize_text_field($_POST['product_name']);
+    $quantity = intval($_POST['quantity']);
+    $price = floatval($_POST['price']);
+
+    $wpdb->insert(
+        "{$wpdb->prefix}aa_inventory",
+        array(
+            'product_name' => $product_name,
+            'quantity' => $quantity,
+            'price' => $price
+        )
+    );
+
+    echo "<div class='bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6'>محصول با موفقیت اضافه شد.</div>";
+}
+
+// Get all products
+$products = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}aa_inventory");
+?>
+<div class="aa-inventory p-6 bg-gray-100">
+    <h2 class="text-2xl font-bold mb-6">مدیریت محصولات</h2>
+
+    <!-- Add Product Form -->
+    <form method="post" action="" class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label for="product_name" class="block text-sm font-medium text-gray-700">نام محصول:</label>
+                <input type="text" id="product_name" name="product_name" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+            </div>
+            <div>
+                <label for="quantity" class="block text-sm font-medium text-gray-700">تعداد:</label>
+                <input type="number" id="quantity" name="quantity" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+            </div>
+            <div>
+                <label for="price" class="block text-sm font-medium text-gray-700">قیمت:</label>
+                <input type="number" id="price" name="price" step="0.01" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+            </div>
+        </div>
+        <button type="submit" name="add_product" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">اضافه کردن محصول</button>
+    </form>
+
+    <!-- Products List -->
+    <h3 class="text-xl font-bold mb-4">لیست محصولات</h3>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="min-w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">نام محصول</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">تعداد</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">قیمت</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">عملیات</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <?php if ($products): ?>
+                    <?php foreach ($products as $product): ?>
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo $product->product_name; ?></td>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo $product->quantity; ?></td>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo number_format($product->price); ?> تومان</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            <a href="#" class="text-blue-500 hover:text-blue-700">ویرایش</a>
+                            <a href="#" class="text-red-500 hover:text-red-700 ml-2">حذف</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-sm text-gray-900 text-center">هیچ محصولی وجود ندارد.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+۲. فایل templates/customers-template.php (مدیریت مشتریان):
+php
+Copy
+<?php
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
+global $wpdb;
+
+// Add customer
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_customer'])) {
+    $name = sanitize_text_field($_POST['name']);
+    $phone = sanitize_text_field($_POST['phone']);
+    $email = sanitize_text_field($_POST['email']);
+
+    $wpdb->insert(
+        "{$wpdb->prefix}aa_customers",
+        array(
+            'name' => $name,
+            'phone' => $phone,
+            'email' => $email
+        )
+    );
+
+    echo "<div class='bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6'>مشتری با موفقیت اضافه شد.</div>";
+}
+
+// Get all customers
+$customers = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}aa_customers");
+?>
+<div class="aa-customers p-6 bg-gray-100">
+    <h2 class="text-2xl font-bold mb-6">مدیریت مشتریان</h2>
+
+    <!-- Add Customer Form -->
+    <form method="post" action="" class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">نام:</label>
+                <input type="text" id="name" name="name" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+            </div>
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700">تلفن:</label>
+                <input type="text" id="phone" name="phone" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+            </div>
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">ایمیل:</label>
+                <input type="email" id="email" name="email" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+            </div>
+        </div>
+        <button type="submit" name="add_customer" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">اضافه کردن مشتری</button>
+    </form>
+
+    <!-- Customers List -->
+    <h3 class="text-xl font-bold mb-4">لیست مشتریان</h3>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="min-w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">نام</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">تلفن</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ایمیل</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">عملیات</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <?php if ($customers): ?>
+                    <?php foreach ($customers as $customer): ?>
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo $customer->name; ?></td>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo $customer->phone; ?></td>
+                        <td class="px-6 py-4 text-sm text-gray-900"><?php echo $customer->email; ?></td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            <a href="#" class="text-blue-500 hover:text-blue-700">ویرایش</a>
+                            <a href="#" class="text-red-500 hover:text-red-700 ml-2">حذف</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-sm text-gray-900 text-center">هیچ مشتری وجود ندارد.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+۳. فایل templates/sales-template.php (مدیریت فروش):
+php
+Copy
+<?php
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
+global $wpdb;
+
+// Get products for dropdown
+$products = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}aa_inventory");
+
+// Get customers for dropdown
+$customers = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}aa_customers");
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create_invoice'])) {
+    $customer_id = intval($_POST['customer_id']);
+    $products_data = $_POST['products'];
+
+    $total_amount = 0;
+    foreach ($products_data as $product) {
+        $product_id = intval($product['id']);
+        $quantity = intval($product['quantity']);
+        $price = floatval($wpdb->get_var("SELECT price FROM {$wpdb->prefix}aa_inventory WHERE id = $product_id"));
+        $total_amount += $price * $quantity;
+
+        // Update inventory
+        $wpdb->query("UPDATE {$wpdb->prefix}aa_inventory SET quantity = quantity - $quantity WHERE id = $product_id");
+    }
+
+    // Insert invoice
+    $wpdb->insert(
+        "{$wpdb->prefix}aa_sales",
+        array(
+            'customer_id' => $customer_id,
+            'total_amount' => $total_amount,
+            'date' => current_time('mysql')
+        )
+    );
+
+    echo "<div class='bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6'>فاکتور با موفقیت ثبت شد.</div>";
+}
+?>
+<div class="aa-sales p-6 bg-gray-100">
+    <h2 class="text-2xl font-bold mb-6">ثبت فروش</h2>
+    <form method="post" action="" class="bg-white p-6 rounded-lg shadow-md">
+        <div class="mb-4">
+            <label for="customer_id" class="block text-sm font-medium text-gray-700">مشتری:</label>
+            <select id="customer_id" name="customer_id" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                <?php foreach ($customers as $customer): ?>
+                <option value="<?php echo $customer->id; ?>"><?php echo $customer->name; ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <h3 class="text-xl font-bold mb-4">محصولات</h3>
+        <div id="products-container" class="space-y-4">
+            <div class="product-row flex space-x-4">
+                <select name="products[0][id]" class="flex-1 p-2 border border-gray-300 rounded-md" required>
+                    <?php foreach ($products as $product): ?>
+                    <option value="<?php echo $product->id; ?>"><?php echo $product->product_name; ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <input type="number" name="products[0][quantity]" placeholder="تعداد" class="flex-1 p-2 border border-gray-300 rounded-md" required>
+            </div>
+        </div>
+        <button type="button" id="add-product" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">اضافه کردن محصول</button>
+
+        <button type="submit" name="create_invoice" class="mt-6 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">ثبت فاکتور</button>
+    </form>
+</div>
+
+<script>
+jQuery(document).ready(function($) {
+    let productIndex = 1;
+    $('#add-product').click(function() {
+        $('#products-container').append(`
+            <div class="product-row flex space-x-4">
+                <select name="products[${productIndex}][id]" class="flex-1 p-2 border border-gray-300 rounded-md" required>
+                    <?php foreach ($products as $product): ?>
+                    <option value="<?php echo $product->id; ?>"><?php echo $product->product_name; ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <input type="number" name="products[${productIndex}][quantity]" placeholder="تعداد" class="flex-1 p-2 border border-gray-300 rounded-md" required>
+            </div>
+        `);
+        productIndex++;
+    });
+});
+</script>
+۴. فایل templates/reports-template.php (گزارش‌گیری):
+php
+Copy
+<?php
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
+global $wpdb;
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['generate_report'])) {
+    $start_date = sanitize_text_field($_POST['start_date']);
+    $end_date = sanitize_text_field($_POST['end_date']);
+
+    $sales_report = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}aa_sales WHERE date BETWEEN '$start_date' AND '$end_date'");
+}
+?>
+<div class="aa-reports p-6 bg-gray-100">
+    <h2 class="text-2xl font-bold mb-6">گزارش‌گیری</h2>
+    <form method="post" action="" class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="start_date" class="block text-sm font-medium text-gray-700">تاریخ شروع:</label>
+                <input type="date" id="start_date" name="start_date" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+            </div>
+            <div>
+                <label for="end_date" class="block text-sm font-medium text-gray-700">تاریخ پایان:</label>
+                <input type="date" id="end_date" name="end_date" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+            </div>
+        </div>
+        <button type="submit" name="generate_report" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">تولید گزارش</button>
+    </form>
+
+    <?php if (isset($sales_report)): ?>
+    <h3 class="text-xl font-bold mb-4">گزارش فروش</h3>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="min-w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">شماره فاکتور</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">مشتری</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">مبلغ</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">تاریخ</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <?php foreach ($sales_report as $sale): ?>
+                <tr>
+                    <td class="px-6 py-4 text-sm text-gray-900"><?php echo $sale->id; ?></td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                        <?php echo $wpdb->get_var("SELECT name FROM {$wpdb->prefix}aa_customers WHERE id = {$sale->customer_id}"); ?>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900"><?php echo number_format($sale->total_amount); ?> تومان</td>
+                    <td class="px-6 py-4 text-sm text-gray-900"><?php echo date('Y/m/d', strtotime($sale->date)); ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php endif; ?>
+</div>
+مرحله بعدی:
+اگر نیاز به تغییرات بیشتری داری یا مشکلی وجود داره، بهم بگو تا بیشتر بررسی کنیم! 😊
+
+درباره نرم افزار های حسابداری تحقیق خیلی خیلی زیاد و جامع و انجام بده و ببین چه امکاناتی دارین و همه رو بنویس و تفکر کن و فکر کن و ببین چطور به ابن برنامه اضافه اش کنیم
+برای ایجاد یک برنامه حسابداری جامع و پیشرفته، ابتدا باید به دقت درباره نرم‌افزارهای حسابداری موجود تحقیق کنیم و ویژگی‌ها و امکانات آن‌ها را بررسی کنیم. این تحقیق به ما کمک می‌کند تا بهترین ویژگی‌ها را شناسایی کنیم و آن‌ها را به برنامه خود اضافه کنیم. در ادامه، یک تحقیق جامع درباره نرم‌افزارهای حسابداری انجام می‌دهم و امکانات آن‌ها را بررسی می‌کنم. سپس، راه‌هایی برای اضافه کردن این امکانات به برنامه شما پیشنهاد می‌دهم.
+
+تحقیق جامع درباره نرم‌افزارهای حسابداری
+۱. نرم‌افزارهای حسابداری ایرانی
+برنامه‌های حسابداری ایرانی معمولاً امکانات گسترده‌ای را ارائه می‌دهند که می‌توان از آن‌ها الگوبرداری کرد. برخی از معروف‌ترین نرم‌افزارهای حسابداری ایرانی عبارتند از:
+
+حساب فا
+
+همکاران سیستم
+
+پارمیس
+
+قیاس
+
+سپیدار
+
+۲. ویژگی‌های اصلی نرم‌افزارهای حسابداری
+بررسی ویژگی‌های اصلی این نرم‌افزارها به ما کمک می‌کند تا بهترین امکانات را شناسایی کنیم. این ویژگی‌ها عبارتند از:
+
+مدیریت فروش و خرید:
+
+ثبت فاکتورهای فروش و خرید.
+
+مدیریت تخفیف‌ها و مالیات.
+
+صدور پیش‌فاکتور و فاکتور رسمی.
+
+امکان چاپ فاکتور.
+
+مدیریت انبار:
+
+مدیریت موجودی کالا.
+
+ثبت ورود و خروج کالا.
+
+هشدار کمبود موجودی.
+
+مدیریت انبارهای چندگانه.
+
+مدیریت مالی:
+
+مدیریت حساب‌های بانکی.
+
+ثبت درآمد و هزینه.
+
+مدیریت چک‌ها (دریافتی و پرداختی).
+
+گزارش‌های مالی (سود و زیان، ترازنامه).
+
+مدیریت مشتریان و تامین‌کنندگان:
+
+ثبت اطلاعات مشتریان و تامین‌کنندگان.
+
+مدیریت حساب‌های دریافتنی و پرداختنی.
+
+تاریخچه تعاملات با مشتریان.
+
+گزارش‌گیری:
+
+گزارش‌های فروش (روزانه، ماهانه، سالانه).
+
+گزارش‌های مالی (سود و زیان، ترازنامه).
+
+گزارش‌های انبار (موجودی، گردش کالا).
+
+مدیریت حقوق و دستمزد:
+
+محاسبه حقوق و دستمزد کارکنان.
+
+مدیریت بیمه و مالیات کارکنان.
+
+صدور فیش حقوقی.
+
+مدیریت بانکی:
+
+مدیریت حساب‌های بانکی.
+
+ثبت تراکنش‌های بانکی.
+
+اتصال به سیستم بانکی (در برخی نرم‌افزارها).
+
+امنیت:
+
+مدیریت کاربران و سطوح دسترسی.
+
+رمزگذاری داده‌ها.
+
+پشتیبان‌گیری خودکار.
+
+پشتیبانی از چند شعبه:
+
+مدیریت مالی و انبار چند شعبه.
+
+گزارش‌گیری یکپارچه از چند شعبه.
+
+پشتیبانی از چند ارز:
+
+ثبت تراکنش‌ها به چند ارز.
+
+محاسبه نرخ ارز به صورت خودکار.
+
+پشتیبانی از ابری (Cloud):
+
+دسترسی از طریق اینترنت.
+
+همگام‌سازی داده‌ها بین دستگاه‌ها.
+
+پشتیبانی از موبایل:
+
+اپلیکیشن موبایل برای مدیریت حساب‌ها.
+
+دسترسی به گزارش‌ها و فاکتورها از طریق موبایل.
+
+چگونه این امکانات را به برنامه شما اضافه کنیم؟
+برای اضافه کردن این امکانات به برنامه شما، مراحل زیر را پیشنهاد می‌کنم:
+
+۱. مدیریت فروش و خرید
+اضافه کردن فرم‌های ثبت فاکتور: فرم‌هایی برای ثبت فاکتورهای فروش و خرید ایجاد کنید.
+
+مدیریت تخفیف‌ها و مالیات: امکان اضافه کردن تخفیف و مالیات به فاکتورها را فراهم کنید.
+
+چاپ فاکتور: قابلیت چاپ فاکتور به صورت PDF یا چاپ مستقیم اضافه کنید.
+
+۲. مدیریت انبار
+مدیریت موجودی: امکان ثبت ورود و خروج کالا و به‌روزرسانی خودکار موجودی انبار.
+
+هشدار کمبود موجودی: اگر موجودی کالا به حداقل رسید، به کاربر هشدار دهید.
+
+۳. مدیریت مالی
+مدیریت حساب‌های بانکی: امکان ثبت حساب‌های بانکی و تراکنش‌های مالی.
+
+گزارش‌های مالی: گزارش‌هایی مانند سود و زیان و ترازنامه ایجاد کنید.
+
+۴. مدیریت مشتریان و تامین‌کنندگان
+ثبت اطلاعات: فرم‌هایی برای ثبت اطلاعات مشتریان و تامین‌کنندگان.
+
+تاریخچه تعاملات: تاریخچه خریدها و پرداخت‌های هر مشتری را ثبت کنید.
+
+۵. گزارش‌گیری
+گزارش‌های فروش: گزارش‌هایی برای فروش روزانه، ماهانه و سالانه.
+
+گزارش‌های انبار: گزارش‌هایی برای موجودی و گردش کالا.
+
+۶. مدیریت حقوق و دستمزد
+محاسبه حقوق: امکان محاسبه حقوق و دستمزد کارکنان.
+
+صدور فیش حقوقی: قابلیت صدور فیش حقوقی به صورت خودکار.
+
+۷. مدیریت بانکی
+ثبت تراکنش‌ها: امکان ثبت تراکنش‌های بانکی.
+
+اتصال به بانک: در صورت امکان، اتصال به سیستم بانکی برای دریافت خودکار تراکنش‌ها.
+
+۸. امنیت
+مدیریت کاربران: امکان ایجاد کاربران با سطوح دسترسی مختلف.
+
+رمزگذاری داده‌ها: از رمزگذاری برای محافظت از داده‌ها استفاده کنید.
+
+۹. پشتیبانی از چند شعبه
+مدیریت چند شعبه: امکان مدیریت مالی و انبار چند شعبه.
+
+گزارش‌گیری یکپارچه: گزارش‌هایی که داده‌های همه شعبه‌ها را یکپارچه نشان می‌دهند.
+
+۱۰. پشتیبانی از چند ارز
+ثبت تراکنش‌ها به چند ارز: امکان ثبت تراکنش‌ها به ارزهای مختلف.
+
+محاسبه نرخ ارز: محاسبه خودکار نرخ ارز بر اساس نرخ روز.
+
+۱۱. پشتیبانی از ابری (Cloud)
+دسترسی از طریق اینترنت: امکان دسترسی به برنامه از طریق اینترنت.
+
+همگام‌سازی داده‌ها: همگام‌سازی داده‌ها بین دستگاه‌های مختلف.
+
+۱۲. پشتیبانی از موبایل
+اپلیکیشن موبایل: ایجاد اپلیکیشن موبایل برای مدیریت حساب‌ها.
+
+دسترسی به گزارش‌ها: امکان دسترسی به گزارش‌ها و فاکتورها از طریق موبایل.
+
+مراحل اجرایی برای اضافه کردن این امکانات
+بررسی اولیه: ابتدا نیازهای کسب‌وکار خود را بررسی کنید و مشخص کنید کدام امکانات برای شما اولویت دارند.
+
+طراحی دیتابیس: دیتابیس برنامه را به‌روزرسانی کنید تا از این امکانات پشتیبانی کند.
+
+توسعه ماژول‌ها: هر یک از این امکانات را به صورت ماژول‌های جداگانه توسعه دهید.
+
+تست و خطایابی: هر ماژول را به‌طور جداگانه تست کنید و خطاها را برطرف کنید.
+
+ادغام ماژول‌ها: ماژول‌ها را با هم ادغام کنید و مطمئن شوید که به‌درستی کار می‌کنند.
+
+بررسی نهایی: برنامه را به‌طور کامل تست کنید و مطمئن شوید که همه امکانات به‌درستی کار می‌کنند.
+
+جمع‌بندی
+با اضافه کردن این امکانات، برنامه شما به یک نرم‌افزار حسابداری جامع و پیشرفته تبدیل می‌شود که می‌تواند نیازهای مختلف کسب‌وکارها را برطرف کند. اگر نیاز به راهنمایی بیشتر یا توضیحات اضافی داری، بهم بگو! 😊
+
+تمامم اینها اولویت دارن و همه رو اضافه کن
